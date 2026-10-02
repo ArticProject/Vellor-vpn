@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Soft Ambient Shadow -->
+    <path
+        android:fillColor="#15000000"
+        android:pathData="M 48,48 m -34,0 a 34,34 0 1,0 68,0 a 34,34 0 1,0 -68,0" />
+
+    <!-- Central Vortex Depth Core -->
+    <path
+        android:fillColor="#FF0B0C0E"
+        android:pathData="M 48,48 m -16,0 a 16,16 0 1,0 32,0 a 16,16 0 1,0 -32,0" />
+
+    <!-- Lobe 1 (Top) -->
+    <path
+        android:pathData="M 48,46 C 43,36 34,26 40,16 C 46,6 58,8 64,16 C 72,26 62,38 52,48 C 50,47 49,46 48,46 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="40"
+                android:startY="10"
+                android:endX="60"
+                android:endY="45"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF5A5F6A" />
+                <item android:offset="0.45" android:color="#FF32353C" />
+                <item android:offset="1.0" android:color="#FF16181C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lobe 2 (Bottom Left) -->
+    <path
+        android:pathData="M 46,50 C 37,53 25,50 18,59 C 11,68 18,78 28,79 C 39,80 47,68 50,54 C 48,53 47,51 46,50 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="16"
+                android:startY="60"
+                android:endX="48"
+                android:endY="52"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF4C515B" />
+                <item android:offset="0.5" android:color="#FF2B2E34" />
+                <item android:offset="1.0" android:color="#FF121417" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lobe 3 (Bottom Right) -->
+    <path
+        android:pathData="M 50,50 C 53,59 58,69 68,69 C 78,69 82,58 77,48 C 72,38 58,42 48,50 C 49,50 50,50 50,50 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="50"
+                android:startY="45"
+                android:endX="78"
+                android:endY="68"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF3E424B" />
+                <item android:offset="0.5" android:color="#FF22242B" />
+                <item android:offset="1.0" android:color="#FF0D0E11" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Outer Intertwining Torus Rim Highlights -->
+    <!-- Top Arc Highlight -->
+    <path
+        android:strokeColor="#FF8B909D"
+        android:strokeWidth="1.2"
+        android:pathData="M 39,18 C 45,9 56,10 63,18" />
+
+    <!-- Bottom Left Arc Highlight -->
+    <path
+        android:strokeColor="#FF7A7F8C"
+        android:strokeWidth="1.2"
+        android:pathData="M 19,61 C 13,69 19,77 27,78" />
+
+    <!-- Bottom Right Arc Highlight -->
+    <path
+        android:strokeColor="#FF6B707C"
+        android:strokeWidth="1.2"
+        android:pathData="M 76,49 C 81,57 76,67 67,68" />
+
+    <!-- Central Funnel Vortex Shadow Overlay -->
+    <path
+        android:fillColor="#FF08090B"
+        android:pathData="M 48,48 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0" />
+</vector>

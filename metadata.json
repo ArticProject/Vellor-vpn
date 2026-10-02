@@ -1,0 +1,6 @@
+{
+  "name": "Vellor VPN",
+  "description": "Minimalist premium VPN client with VLESS/Reality and WireGuard protocols, battery saver, morphing dots animation, and custom server routing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

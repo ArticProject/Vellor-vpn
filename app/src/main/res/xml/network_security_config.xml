@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <!-- This provider currently exposes subscriptions only over HTTP on port 25557.
+         Keep this exception limited to its exact hostname; never send panel admin credentials. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">de1.h1cloud.net</domain>
+    </domain-config>
+</network-security-config>

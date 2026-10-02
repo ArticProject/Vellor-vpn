@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#1F232B"
+        android:pathData="M 48,48 m -44,0 a 44,44 0 1,0 88,0 a 44,44 0 1,0 -88,0" />
+    <!-- Modern geometric hexagon node -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M48,26L66,36.5v21L48,68 30,57.5v-21z" />
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M48,32L61,39.5v15L48,62 35,54.5v-15z" />
+</vector>

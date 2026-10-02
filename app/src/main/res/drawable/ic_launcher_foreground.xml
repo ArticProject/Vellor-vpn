@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Ambient Occlusion Shadow -->
+    <path
+        android:fillColor="#18000000"
+        android:pathData="M 54,54 m -32,0 a 32,32 0 1,0 64,0 a 32,32 0 1,0 -64,0" />
+
+    <!-- Central Vortex Depth Core -->
+    <path
+        android:fillColor="#FF08090C"
+        android:pathData="M 54,54 m -14,0 a 14,14 0 1,0 28,0 a 14,14 0 1,0 -28,0" />
+
+    <!-- Lobe 1: Top Aerodynamic Wing (0 / 12 o'clock) -->
+    <path
+        android:pathData="M 54,52 C 48,40 37,28 44,17 C 51,6 65,8 72,17 C 81,28 70,42 58,54 C 56,53 55,52 54,52 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="44"
+                android:startY="10"
+                android:endX="66"
+                android:endY="50"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF565B66" />
+                <item android:offset="0.45" android:color="#FF30333A" />
+                <item android:offset="1.0" android:color="#FF14161A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lobe 2: Bottom-Left Aerodynamic Wing (210 / 8 o'clock) -->
+    <path
+        android:pathData="M 52,56 C 42,59 29,56 21,66 C 13,76 21,87 32,88 C 44,89 53,76 56,60 C 54,59 53,57 52,56 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="19"
+                android:startY="68"
+                android:endX="54"
+                android:endY="58"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF484C55" />
+                <item android:offset="0.5" android:color="#FF282A30" />
+                <item android:offset="1.0" android:color="#FF101114" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lobe 3: Bottom-Right Aerodynamic Wing (330 / 4 o'clock) -->
+    <path
+        android:pathData="M 56,56 C 60,66 65,77 77,77 C 88,77 92,65 86,54 C 80,42 65,47 54,56 C 55,56 56,56 56,56 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="56"
+                android:startY="50"
+                android:endX="88"
+                android:endY="76"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF3C4048" />
+                <item android:offset="0.5" android:color="#FF202227" />
+                <item android:offset="1.0" android:color="#FF0B0C0E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Specular Ridge Highlights matching studio lighting -->
+    <!-- Top Arc Highlight -->
+    <path
+        android:strokeColor="#FF8F94A2"
+        android:strokeWidth="1.4"
+        android:pathData="M 43,19 C 50,9 62,10 71,19" />
+
+    <!-- Bottom-Left Arc Highlight -->
+    <path
+        android:strokeColor="#FF7E8390"
+        android:strokeWidth="1.4"
+        android:pathData="M 22,68 C 15,77 22,86 31,87" />
+
+    <!-- Bottom-Right Arc Highlight -->
+    <path
+        android:strokeColor="#FF6D727E"
+        android:strokeWidth="1.4"
+        android:pathData="M 85,55 C 91,64 85,75 75,76" />
+
+    <!-- Central Funnel Vortex Shadow Overlay -->
+    <path
+        android:fillColor="#FF050608"
+        android:pathData="M 54,54 m -9,0 a 9,9 0 1,0 18,0 a 9,9 0 1,0 -18,0" />
+</vector>
