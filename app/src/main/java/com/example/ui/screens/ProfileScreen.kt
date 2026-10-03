@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -361,6 +362,56 @@ fun ProfileScreen(
             }
         }
 
+        // 2. Developer / Creator Card ("Делал: @23") moved up directly under Profile Card
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(cardBg)
+                    .border(1.dp, cardBorder, RoundedCornerShape(18.dp))
+                    .padding(horizontal = 18.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = if (isRu) "АВТОРСТВО" else "AUTHORSHIP",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textSecondary,
+                            letterSpacing = 1.1.sp
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Делал: @23",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(innerBg)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "@23",
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = accentWarm
+                        )
+                    }
+                }
+            }
+        }
+
         // 3. Compact Key / Subscription Window (NO GREEN, Warm Dark/White)
         item {
             Box(
@@ -478,189 +529,9 @@ fun ProfileScreen(
             }
         }
 
-        // 3.5. VPN Settings: Battery Saver Card
+        // Bottom padding to clear floating navigation bar
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(cardBg)
-                    .border(1.dp, cardBorder, RoundedCornerShape(20.dp))
-                    .padding(18.dp)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .background(innerBg),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Power,
-                                    contentDescription = null,
-                                    tint = if (isBatterySaverEnabled) textPrimary else textSecondary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = if (isRu) "Энергосбережение" else "Battery Saver",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = textPrimary
-                                )
-                                Text(
-                                    text = if (isRu) "Настройки туннеля и питания" else "Tunnel & Power Settings",
-                                    fontSize = 11.sp,
-                                    color = textSecondary
-                                )
-                            }
-                        }
-
-                        Switch(
-                            checked = isBatterySaverEnabled,
-                            onCheckedChange = onToggleBatterySaver
-                        )
-                    }
-
-                    Text(
-                        text = if (isRu) {
-                            "При низком заряде аккумулятора или включении режима энергосбережения частота ICMP-пинга автоматически снижается с 2.5 до 15 секунд для экономии заряда."
-                        } else {
-                            "Reduces ICMP ping frequency from 2.5s to 15s when device enters low-power mode, conserving battery life."
-                        },
-                        fontSize = 12.sp,
-                        color = textSecondary,
-                        lineHeight = 17.sp
-                    )
-
-                    // Live Status Chip
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(innerBg)
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isBatterySaverEnabled && isLowPowerMode) Color(0xFF10B981)
-                                    else Color(0xFF71717A)
-                                )
-                        )
-                        Text(
-                            text = if (isBatterySaverEnabled && isLowPowerMode) {
-                                (if (isRu) "Эко-режим активен (интервал 15 сек)" else "Eco mode active (15s interval)")
-                            } else {
-                                (if (isRu) "Стандартный режим (интервал 2.5 сек)" else "Standard mode (2.5s interval)")
-                            },
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = textPrimary
-                        )
-                    }
-                }
-            }
-        }
-
-        // 4. Developer / Creator Card ("Делал: @23")
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(cardBg)
-                    .border(1.dp, cardBorder, RoundedCornerShape(18.dp))
-                    .padding(horizontal = 18.dp, vertical = 14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = if (isRu) "АВТОРСТВО" else "AUTHORSHIP",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textSecondary,
-                            letterSpacing = 1.1.sp
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = "Делал: @23",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textPrimary
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(innerBg)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Text(
-                            text = "@23",
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            color = accentWarm
-                        )
-                    }
-                }
-            }
-        }
-
-        // 5. Aesthetic Editorial Footer (3 lines in English, subtle typography)
-        item {
-            Spacer(modifier = Modifier.height(18.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "MINIMAL SOVEREIGN TUNNEL ROUTING",
-                    color = textSecondary.copy(alpha = 0.55f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.4.sp,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "END-TO-END CRYPTOGRAPHIC ENCLAVE",
-                    color = textSecondary.copy(alpha = 0.55f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.4.sp,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "DEVELOPED FOR PRIVATE CITIZENS",
-                    color = textSecondary.copy(alpha = 0.55f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.4.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 

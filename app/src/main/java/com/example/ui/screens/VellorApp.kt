@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -21,6 +22,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.model.AppLanguage
 import com.example.model.AppTab
@@ -41,10 +47,6 @@ fun VellorApp(
     val context = androidx.compose.ui.platform.LocalContext.current
 
     var isAppSplashVisible by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        viewModel.verifyNetworkConnection(context)
-    }
 
     if (isAppSplashVisible) {
         com.example.ui.components.CosmosAppSplashScreen(
@@ -72,8 +74,8 @@ fun VellorApp(
             currentUsername = username,
             avatarIndex = avatarIndex,
             customAvatarPath = customAvatarPath,
-            onSelectAvatar = { viewModel.selectAvatar(it) },
-            onPickCustomAvatar = { viewModel.pickCustomAvatar(it) },
+            onSelectAvatar = { viewModel.setAvatarIndex(it) },
+            onPickCustomAvatar = { viewModel.setCustomAvatar(context, it) },
             onSaveUsername = { viewModel.registerUser(it, "") },
             onFinishOnboarding = { viewModel.completeOnboarding() },
             modifier = modifier
@@ -105,11 +107,8 @@ fun VellorApp(
     val pingMs by viewModel.pingMs.collectAsStateWithLifecycle()
     val inspectingServer by viewModel.inspectingServer.collectAsStateWithLifecycle()
 
-    val username by viewModel.username.collectAsStateWithLifecycle()
     val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
     val sovereignId by viewModel.sovereignId.collectAsStateWithLifecycle()
-    val avatarIndex by viewModel.avatarIndex.collectAsStateWithLifecycle()
-    val customAvatarPath by viewModel.customAvatarPath.collectAsStateWithLifecycle()
     val isRegistered by viewModel.isRegistered.collectAsStateWithLifecycle()
     val isActivated by viewModel.isActivated.collectAsStateWithLifecycle()
     val activatedKey by viewModel.activatedKey.collectAsStateWithLifecycle()
@@ -235,6 +234,20 @@ fun VellorApp(
                     }
                 }
             }
+
+            // Giant Cosmos.so style typography "ASTRAL" behind floating Safari Bar
+            Text(
+                text = "ASTRAL",
+                fontSize = 88.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 12.sp,
+                color = if (isDarkTheme) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .graphicsLayer { translationY = 22.dp.toPx() }
+            )
 
             VellorSafariBar(
                 currentTab = currentTab,

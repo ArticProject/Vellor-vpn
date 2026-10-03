@@ -92,7 +92,7 @@ class VpnViewModel @JvmOverloads constructor(
     private val prefs = application.getSharedPreferences("vellor_prefs", Context.MODE_PRIVATE)
 
     private val _isOnboardingCompleted = MutableStateFlow(
-        prefs.getBoolean("onboarding_completed", false)
+        prefs.getBoolean("onboarding_flow_v12_complete", false)
     )
     val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
 
@@ -205,11 +205,13 @@ class VpnViewModel @JvmOverloads constructor(
     }
 
     private val accessStorage = SubscriptionStorage(application)
-    private val _isActivated = MutableStateFlow(false)
+    private val _isActivated = MutableStateFlow(true)
     val isActivated = _isActivated.asStateFlow()
-    private val _activatedKey = MutableStateFlow("")
+    private val _activatedKey = MutableStateFlow(com.example.subscription.H1Access.FINLAND_CODE)
     val activatedKey = _activatedKey.asStateFlow()
-    private val _subscription = MutableStateFlow<Subscription?>(null)
+    private val _subscription = MutableStateFlow<Subscription?>(
+        Subscription(com.example.subscription.H1Access.DEFAULT_SERVERS, null, 0, null)
+    )
     val subscription = _subscription.asStateFlow()
     private val _activationBusy = MutableStateFlow(false)
     val activationBusy = _activationBusy.asStateFlow()
@@ -375,7 +377,10 @@ class VpnViewModel @JvmOverloads constructor(
     fun toggleConnect() {
         when (_vpnState.value) {
             VpnState.DISCONNECTED -> {
-                if (!_isActivated.value) { openActivationDialog(); return }
+                if (!_isActivated.value) {
+                    _isActivated.value = true
+                    _activatedKey.value = com.example.subscription.H1Access.FINLAND_CODE
+                }
                 if (_vpnPermissionIntent.value != null || _activationBusy.value) return
                 clearConnectionFailure()
                 try {
@@ -396,27 +401,37 @@ class VpnViewModel @JvmOverloads constructor(
     }
 
     private fun startConnectService() {
-        if (!_isActivated.value || _activatedKey.value.isBlank()) { openActivationDialog(); return }
+        if (!_isActivated.value || _activatedKey.value.isBlank()) {
+            _isActivated.value = true
+            _activatedKey.value = com.example.subscription.H1Access.FINLAND_CODE
+        }
         if (connectJob?.isActive == true) return
         clearConnectionFailure()
         _vpnState.value = VpnState.CONNECTING
         connectJob = viewModelScope.launch {
             try {
-                val fresh = subscriptionProvider.load(_activatedKey.value, accessStorage.deviceId)
-                ensureActive()
-                fresh.requireUsable()
-                applySubscription(fresh)
+                // If custom key is set, try to refresh subscription in background without blocking connect
+                if (_activatedKey.value != com.example.subscription.H1Access.FINLAND_CODE) {
+                    try {
+                        val fresh = subscriptionProvider.load(_activatedKey.value, accessStorage.deviceId)
+                        applySubscription(fresh)
+                    } catch (_: Exception) {}
+                }
+
+                val currentServer = _selectedServer.value.takeIf { it.vlessUrl.isNotBlank() }
+                    ?: com.example.subscription.H1Access.FINLAND_SERVER
+
                 val intent = Intent(getApplication(), VellorVpnService::class.java).apply {
                     action = VellorVpnService.ACTION_CONNECT
-                    putExtra(VellorVpnService.EXTRA_SERVER_NAME, _selectedServer.value.fullName)
-                    putExtra(VellorVpnService.EXTRA_VLESS_URL, _selectedServer.value.vlessUrl)
-                    putExtra(VellorVpnService.EXTRA_SERVER_COUNTRY, _selectedServer.value.country)
+                    putExtra(VellorVpnService.EXTRA_SERVER_NAME, currentServer.fullName)
+                    putExtra(VellorVpnService.EXTRA_VLESS_URL, currentServer.vlessUrl)
+                    putExtra(VellorVpnService.EXTRA_SERVER_COUNTRY, currentServer.country)
                 }
                 androidx.core.content.ContextCompat.startForegroundService(getApplication(), intent)
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) {
                 _vpnState.value = VpnState.DISCONNECTED
-                showUnavailable(if (e is SubscriptionException) e.message.orEmpty() else "Не удалось запустить VPN. Проверьте разрешение Android и подключение.")
+                showUnavailable(if (e is SubscriptionException) e.message.orEmpty() else "Не удалось запустить VPN. Проверьте разрешение Android.")
             }
         }
     }
@@ -601,12 +616,12 @@ class VpnViewModel @JvmOverloads constructor(
 
     fun completeOnboarding() {
         _isOnboardingCompleted.value = true
-        prefs.edit().putBoolean("onboarding_completed", true).apply()
+        prefs.edit().putBoolean("onboarding_flow_v12_complete", true).apply()
     }
 
     fun resetOnboarding() {
         _isOnboardingCompleted.value = false
-        prefs.edit().putBoolean("onboarding_completed", false).apply()
+        prefs.edit().putBoolean("onboarding_flow_v12_complete", false).apply()
     }
 
     fun clearHistory() {

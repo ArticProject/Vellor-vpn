@@ -226,57 +226,6 @@ fun VellorPreferencesMenu(
             modifier = Modifier.padding(vertical = 4.dp)
         )
 
-        // Section: Battery Saver
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Power,
-                        contentDescription = null,
-                        tint = if (isBatterySaverEnabled) (if (isDarkTheme) Color.White else Color(0xFF09090B)) else Color(0xFF71717A),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Column {
-                        Text(
-                            text = if (currentLanguage == AppLanguage.RUSSIAN) "Энергосбережение" else "Battery Saver",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (isDarkTheme) Color.White else Color(0xFF09090B)
-                        )
-                        Text(
-                            text = if (isBatterySaverEnabled && isLowPowerMode) {
-                                (if (currentLanguage == AppLanguage.RUSSIAN) "Эко-режим (15с пинг)" else "Eco active (15s ping)")
-                            } else {
-                                (if (currentLanguage == AppLanguage.RUSSIAN) "Снижает пинг при <20%" else "Saves ping in low power")
-                            },
-                            fontSize = 10.sp,
-                            color = if (isBatterySaverEnabled && isLowPowerMode) Color(0xFF10B981) else (if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF71717A))
-                        )
-                    }
-                }
-
-                Switch(
-                    checked = isBatterySaverEnabled,
-                    onCheckedChange = onToggleBatterySaver,
-                    modifier = Modifier.scale(0.8f)
-                )
-            }
-        }
-
-        HorizontalDivider(
-            color = if (isDarkTheme) Color(0xFF27272A) else Color(0xFFE5E5EA),
-            thickness = 0.8.dp,
-            modifier = Modifier.padding(vertical = 4.dp)
-        )
-
         DropdownMenuItem(
             text = {
                 Text(

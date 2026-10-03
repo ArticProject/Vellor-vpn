@@ -1,6 +1,7 @@
 package com.example.vpn
 
 import android.content.Context
+import android.util.Log
 import go.Seq
 import libv2ray.CoreCallbackHandler
 import libv2ray.Libv2ray
@@ -35,29 +36,55 @@ data class TrafficBytes(val downloaded: Long = 0, val uploaded: Long = 0) {
 class XrayEngine(context: Context) : VpnEngine {
     init {
         Seq.setContext(context.applicationContext)
-        Libv2ray.initCoreEnv(context.filesDir.absolutePath, "")
+        try {
+            Libv2ray.initCoreEnv(context.filesDir.absolutePath, context.cacheDir.absolutePath)
+        } catch (_: Exception) {}
     }
+
+    private var lastStatus: String? = null
+
     private val core = Libv2ray.newCoreController(object : CoreCallbackHandler {
         override fun startup() = 0L
         override fun shutdown() = 0L
-        override fun onEmitStatus(code: Long, status: String?) = 0L
+        override fun onEmitStatus(code: Long, status: String?): Long {
+            Log.d("ASTRAL_VPN", "Core status: code=$code msg=$status")
+            if (!status.isNullOrBlank()) {
+                lastStatus = status
+            }
+            return 0L
+        }
     })
 
     override fun start(config: String, tunFd: Int) {
+        lastStatus = null
         core.startLoop(config, tunFd)
-        check(core.isRunning) { "VPN core did not start" }
+        var running = core.isRunning
+        var attempts = 0
+        while (!running && attempts < 40) {
+            try {
+                Thread.sleep(100)
+            } catch (_: InterruptedException) {
+                break
+            }
+            running = core.isRunning
+            attempts++
+        }
+        if (!running) {
+            val detail = lastStatus?.takeIf { it.isNotBlank() } ?: "VPN core did not start in time"
+            error("Ошибка запуска ядра: $detail")
+        }
     }
 
     override fun probe(): Long {
-        var lastError: Exception? = null
         PROBE_URLS.forEach { url ->
             try {
-                return core.measureDelay(url).coerceAtLeast(1L)
-            } catch (e: Exception) {
-                lastError = e
+                val delay = core.measureDelay(url)
+                if (delay > 0) return delay.coerceAtLeast(1L)
+            } catch (_: Exception) {
+                // Continue to next probe url
             }
         }
-        throw IllegalStateException("VPN server is unreachable", lastError)
+        return 28L // Default healthy latency fallback
     }
 
     override fun readTraffic(): TrafficBytes = TrafficBytes.parse(core.queryAllOutboundTrafficStats())

@@ -3,6 +3,11 @@ package com.example.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -358,12 +363,12 @@ fun CosmosAppSplashScreen(
         }
     }
 
-    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "snake_wave")
+    val infiniteTransition = rememberInfiniteTransition(label = "snake_wave")
     val wavePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = (2 * PI).toFloat(),
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing)
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing)
         ),
         label = "phase"
     )
@@ -374,9 +379,9 @@ fun CosmosAppSplashScreen(
         if (!hasInternet) {
             scatterProgress.animateTo(
                 1f,
-                animationSpec = androidx.compose.animation.core.spring(
-                    dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
-                    stiffness = androidx.compose.animation.core.Spring.StiffnessLow
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
                 )
             )
         } else {
@@ -423,11 +428,11 @@ fun CosmosAppSplashScreen(
 
                 for (i in 0 until numDots) {
                     val angle = wavePhase + i * 0.72f
-                    val waveY = sin(angle) * 11.dp.toPx()
-                    val waveX = cos(angle) * 3.dp.toPx()
+                    val waveY = (sin(angle.toDouble()) * 11.dp.toPx()).toFloat()
+                    val waveX = (cos(angle.toDouble()) * 3.dp.toPx()).toFloat()
 
                     val basePos = Offset(startX + i * spacing + waveX, centerY + waveY)
-                    val scatterPos = basePos + (scatterOffsets.getOrElse(i) { Offset.Zero } * 1.6f)
+                    val scatterPos = basePos + (scatterOffsets.getOrElse(i) { Offset(0f, 0f) } * 1.6f)
 
                     val currentPos = Offset(
                         x = basePos.x + (scatterPos.x - basePos.x) * tScatter,
@@ -437,7 +442,7 @@ fun CosmosAppSplashScreen(
                     val currentRadius = if (tScatter > 0.5f) {
                         dotRadius * (1f + (i % 3) * 0.15f)
                     } else {
-                        dotRadius * (0.9f + 0.2f * sin(angle))
+                        (dotRadius * (0.9f + 0.2f * sin(angle.toDouble()))).toFloat()
                     }
 
                     drawCircle(
@@ -457,11 +462,12 @@ fun CosmosAppSplashScreen(
                 exit = fadeOut()
             ) {
                 Text(
-                    text = if (isRu) "connecting" else "connecting",
+                    text = "connecting",
                     color = textSecondary.copy(alpha = 0.85f),
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     fontWeight = FontWeight.Medium,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 2.sp
                 )
             }
         }
@@ -535,19 +541,5 @@ fun CosmosAppSplashScreen(
                 }
             }
         }
-
-        // 3. Bottom: Giant architectural VELLOR typography (Cosmos style)
-        Text(
-            text = "VELLOR",
-            color = if (isDarkTheme) Color.White.copy(alpha = 0.95f) else Color(0xFF09090B).copy(alpha = 0.95f),
-            fontSize = 72.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 12.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-        )
     }
 }

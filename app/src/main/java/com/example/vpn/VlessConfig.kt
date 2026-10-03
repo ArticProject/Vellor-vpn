@@ -6,10 +6,9 @@ import java.net.URI
 import java.net.URLDecoder
 import java.util.UUID
 
-/** Strictly supports the TCP + REALITY profiles used by this app. No direct fallback. */
+/** Strictly supports the TCP + REALITY profiles used by this app. */
 object VlessConfig {
     fun build(link: String): String {
-        // Never include the input or parser exceptions in diagnostics: the URI contains credentials.
         try {
             val uri = URI(link.trim())
             require(uri.scheme == "vless" && !uri.host.isNullOrBlank())
@@ -39,7 +38,10 @@ object VlessConfig {
             require(requested in setOf("chrome", "firefox", "safari", "ios", "android", "edge", "random", "randomized"))
             // uTLS "android" (OkHttp/Android 11) has no TLS 1.3, which REALITY requires.
             val fingerprint = if (requested == "android") "chrome" else requested
-            val user = JSONObject().put("id", id).put("encryption", "none").put("flow", flow)
+            val user = JSONObject().put("id", id).put("encryption", "none")
+            if (flow.isNotBlank()) {
+                user.put("flow", flow)
+            }
             val reality = JSONObject().put("serverName", sni).put("fingerprint", fingerprint)
                 .put("publicKey", key).put("shortId", sid).put("spiderX", params["spx"] ?: "/")
             val outbound = JSONObject().put("tag", "proxy").put("protocol", "vless")
@@ -47,6 +49,7 @@ object VlessConfig {
                     .put("address", uri.host).put("port", uri.port).put("users", JSONArray().put(user)))))
                 .put("streamSettings", JSONObject().put("network", "tcp").put("security", "reality")
                     .put("realitySettings", reality))
+
             val sniffing = JSONObject()
                 .put("enabled", true)
                 .put("destOverride", JSONArray().put("http").put("tls").put("quic"))
@@ -59,7 +62,7 @@ object VlessConfig {
                 .put("sniffing", sniffing)
 
             val dns = JSONObject()
-                .put("servers", JSONArray().put("1.1.1.1").put("8.8.8.8").put("https://dns.google/dns-query"))
+                .put("servers", JSONArray().put("1.1.1.1").put("8.8.8.8"))
 
             val routing = JSONObject()
                 .put("domainStrategy", "IPIfNonMatch")

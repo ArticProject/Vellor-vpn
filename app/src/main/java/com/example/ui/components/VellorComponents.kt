@@ -96,12 +96,12 @@ fun VellorHeader(
             Spacer(modifier = Modifier.width(10.dp))
 
             Text(
-                text = "Vellor",
+                text = "ASTRAL ∞",
                 style = MaterialTheme.typography.titleLarge,
                 color = if (isDarkTheme) Color.White else Color(0xFF09090B),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 fontSize = 20.sp,
-                letterSpacing = (-0.5).sp
+                letterSpacing = 0.5.sp
             )
         }
 

@@ -150,7 +150,7 @@ fun ServerInspectorDialog(
                     )
                     InspectorSpecRow(
                         label = if (isRu) "Пропускная способность" else "Hardware Capacity",
-                        value = "10 Gbps WireGuard Dedicated",
+                        value = "100 Mbit/s X-Ray VLESS Dedicated",
                         isDarkTheme = isDarkTheme
                     )
                     InspectorSpecRow(

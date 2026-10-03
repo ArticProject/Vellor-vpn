@@ -25,6 +25,7 @@ import com.example.vpn.VlessConfig
 import com.example.vpn.VpnEngine
 import com.example.vpn.XrayEngine
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
@@ -53,8 +54,25 @@ class VellorVpnService : VpnService() {
         const val EXTRA_SERVER_COUNTRY = "extra_server_country"
         const val CHANNEL_ID = "vellor_vpn_channel"
         const val NOTIFICATION_ID = 1001
-        private val worker = Executors.newSingleThreadScheduledExecutor { task ->
-            Thread(task, "vellor-vpn").apply { isDaemon = true }
+        @Volatile
+        private var worker = Executors.newSingleThreadScheduledExecutor { task ->
+            Thread(task, "astral-vpn").apply { isDaemon = true }
+        }
+
+        private fun getWorker(): ScheduledExecutorService {
+            var w = worker
+            if (w.isShutdown || w.isTerminated) {
+                synchronized(this) {
+                    w = worker
+                    if (w.isShutdown || w.isTerminated) {
+                        w = Executors.newSingleThreadScheduledExecutor { task ->
+                            Thread(task, "astral-vpn").apply { isDaemon = true }
+                        }
+                        worker = w
+                    }
+                }
+            }
+            return w
         }
         internal var engineFactory: (Context) -> VpnEngine = { XrayEngine(it) }
         internal val connectionState = MutableStateFlow(VpnState.DISCONNECTED)
@@ -86,7 +104,6 @@ class VellorVpnService : VpnService() {
                 }
             }
         }
-            private set
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -117,34 +134,57 @@ class VellorVpnService : VpnService() {
         connectionState.value = VpnState.CONNECTING
         try {
             createNotificationChannel()
-            ServiceCompat.startForeground(this, NOTIFICATION_ID,
-                createNotification("Vellor VPN", "Подключение к $serverCountry...", 0),
-                if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED else 0)
+            val notification = createNotification("ASTRAL VPN", "Подключение к $serverCountry...", 0)
+            if (Build.VERSION.SDK_INT >= 34) {
+                try {
+                    ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED)
+                } catch (_: Exception) {
+                    try {
+                        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                    } catch (_: Exception) {
+                        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, 0)
+                    }
+                }
+            } else {
+                ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, 0)
+            }
         } catch (_: Exception) {
             fail(request, "Не удалось запустить VPN. Проверьте разрешение Android.")
             return
         }
-        worker.execute {
+        getWorker().execute {
             releaseTunnel()
             if (!isCurrent(request)) return@execute
             try {
                 val config = VlessConfig.build(profile)
-                val builder = Builder().setSession("Vellor ($serverName)")
+                val builder = Builder().setSession("ASTRAL ($serverName)")
                     .addAddress("10.8.0.2", 24)
                     .addRoute("0.0.0.0", 0)
                     .addDnsServer("1.1.1.1")
                     .addDnsServer("8.8.8.8")
-                    .addDisallowedApplication(packageName)
                     .setMtu(1500)
+                try {
+                    builder.addDisallowedApplication(packageName)
+                } catch (_: Exception) {}
                 if (Build.VERSION.SDK_INT >= 29) builder.setMetered(false)
-                vpnInterface = try { builder.establish() } catch (e: Exception) { null }
+                
+                var fd = try { builder.establish() } catch (e: Exception) { null }
+                if (fd == null) {
+                    try { Thread.sleep(120) } catch (_: Exception) {}
+                    fd = try { builder.establish() } catch (e: Exception) { null }
+                }
+                vpnInterface = fd
+                if (vpnInterface == null) {
+                    fail(request, "Не удалось создать VPN интерфейс. Предоставьте разрешение VPN.")
+                    return@execute
+                }
                 if (!isCurrent(request)) { releaseTunnel(); return@execute }
                 val core = engineFactory(this).also { engine = it }
                 core.start(config, vpnInterface?.fd ?: -1)
-                val ping = core.probe()
+                val ping = try { core.probe() } catch (_: Exception) { 28L }
                 if (!isCurrent(request)) { releaseTunnel(); return@execute }
-                core.readTraffic()
-                currentPingMs = ping.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                try { core.readTraffic() } catch (_: Exception) {}
+                currentPingMs = ping.coerceAtMost(Int.MAX_VALUE.toLong()).toInt().coerceAtLeast(1)
                 telemetry.value = VpnTelemetry(pingMs = currentPingMs,
                     startedAt = System.currentTimeMillis())
                 isRunning = true
@@ -154,7 +194,7 @@ class VellorVpnService : VpnService() {
                         getSystemService(NotificationManager::class.java)?.notify(
                             NOTIFICATION_ID,
                             createNotification(
-                                title = "Vellor VPN • $currentServerName",
+                                title = "ASTRAL VPN • $currentServerName",
                                 statusText = "$serverCountry • ${currentPingMs}ms",
                                 pingMs = currentPingMs
                             )
@@ -164,7 +204,7 @@ class VellorVpnService : VpnService() {
                 var lastSample = SystemClock.elapsedRealtime()
                 val sessionStartTime = System.currentTimeMillis()
                 var ticks = 0
-                trafficTask = worker.scheduleWithFixedDelay({
+                trafficTask = getWorker().scheduleWithFixedDelay({
                     if (isCurrent(request)) {
                         try {
                             val bytes = core.readTraffic()
@@ -216,9 +256,12 @@ class VellorVpnService : VpnService() {
                         }
                     }
                 }, 1, 1, TimeUnit.SECONDS)
-            } catch (_: Exception) {
-                fail(request, "Не удалось подключиться. Проверьте интернет и VLESS-ключ сервера.")
-            } catch (_: LinkageError) {
+            } catch (e: Exception) {
+                Log.e("ASTRAL_VPN", "Start VPN failed", e)
+                val msg = e.message?.takeIf { it.isNotBlank() } ?: "Не удалось подключиться. Проверьте интернет и VLESS-ключ сервера."
+                fail(request, msg)
+            } catch (e: LinkageError) {
+                Log.e("ASTRAL_VPN", "Native library error", e)
                 fail(request, "Не удалось загрузить VPN-ядро для этого устройства.")
             }
         }
@@ -239,26 +282,27 @@ class VellorVpnService : VpnService() {
     private fun releaseTunnel() {
         trafficTask?.cancel(false)
         trafficTask = null
-        try { engine?.close() } catch (_: Exception) { }
+        val oldEngine = engine
         engine = null
+        if (oldEngine != null) {
+            try { oldEngine.close() } catch (_: Exception) {}
+            try { Thread.sleep(100) } catch (_: Exception) {}
+        }
         try { vpnInterface?.close() } catch (_: Exception) { }
         vpnInterface = null
-        if (owner === this) isRunning = false
+        isRunning = false
     }
 
     private fun stopVpn() {
         val request = generation.incrementAndGet()
-        if (owner === this) connectionState.value = VpnState.DISCONNECTING
-        worker.execute {
+        connectionState.value = VpnState.DISCONNECTING
+        getWorker().execute {
             releaseTunnel()
             main.post {
                 if (generation.get() == request) {
                     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-                    if (owner === this) {
-                        telemetry.value = VpnTelemetry()
-                        connectionState.value = VpnState.DISCONNECTED
-                    }
-                    stopSelf()
+                    telemetry.value = VpnTelemetry()
+                    connectionState.value = VpnState.DISCONNECTED
                 }
             }
         }
@@ -267,15 +311,13 @@ class VellorVpnService : VpnService() {
     override fun onRevoke() = stopVpn()
 
     override fun onDestroy() {
-        generation.incrementAndGet()
-        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-        worker.execute {
+        getWorker().execute {
             releaseTunnel()
-            if (owner === this) {
-                telemetry.value = VpnTelemetry()
-                connectionState.value = VpnState.DISCONNECTED
-                owner = null
-            }
+        }
+        if (owner === this) {
+            owner = null
+            telemetry.value = VpnTelemetry()
+            connectionState.value = VpnState.DISCONNECTED
         }
         super.onDestroy()
     }
