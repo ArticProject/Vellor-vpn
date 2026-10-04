@@ -168,23 +168,10 @@ fun OnboardingScreen(
                 // SCREEN 1: ASTRAL BACKGROUND & CENTERED BUTTON
                 // ==========================================
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // 1. Ethereal Astral Background with drifting stars & constellations
-                    com.example.ui.components.AstralBackground(
+                    // 1. Geometric Plexus / Network Constellation Background (same as main screen)
+                    com.example.ui.components.MeshNetworkBackground(
                         modifier = Modifier.fillMaxSize(),
                         isDarkTheme = isDarkTheme
-                    )
-
-                    // 2. Subtle architectural ASTRAL watermark
-                    Text(
-                        text = "ASTRAL",
-                        fontSize = 86.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 16.sp,
-                        color = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.05f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxWidth()
                     )
 
                     Column(
@@ -363,10 +350,10 @@ private fun ClockwiseArcStartSection(
             }
         }
 
-        // Pill button: shifted slightly left (-10.dp) and lower (+38.dp) so it stands perfectly straight and centered
+        // Pill button: shifted slightly left (-10.dp) and lower (+52.dp) so it stands perfectly straight and centered
         Box(
             modifier = Modifier
-                .offset(x = (-10).dp, y = 38.dp)
+                .offset(x = (-10).dp, y = 52.dp)
                 .width(160.dp)
                 .height(52.dp)
                 .clip(RoundedCornerShape(26.dp))

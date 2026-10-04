@@ -191,10 +191,12 @@ fun CosmosErrorOverlay(
 ) {
     if (!visible) return
 
-    var triggerCount by remember { mutableStateOf(0) }
-    LaunchedEffect(visible) {
-        if (visible) {
-            triggerCount++
+    var isSpinning by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isSpinning) {
+        if (isSpinning) {
+            kotlinx.coroutines.delay(2200)
+            isSpinning = false
         }
     }
 
@@ -258,9 +260,9 @@ fun CosmosErrorOverlay(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Single-run 60fps Cosmos dots
-                CosmosOneShotDotsAnimation(
-                    playTrigger = triggerCount,
+                // 1-in-1 video accurate morphing 8-dots spinner
+                CosmosMorphingDotsSpinner(
+                    isSpinning = isSpinning,
                     isDarkTheme = isDarkTheme,
                     dotColor = textPrimary
                 )
@@ -290,13 +292,13 @@ fun CosmosErrorOverlay(
 
                 Spacer(modifier = Modifier.height(22.dp))
 
-                // Action button (re-triggers animation and executes retry)
+                // Action button (morphs dots into spinning flower wheel and executes retry)
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(24.dp))
                         .background(btnBg)
                         .bounceClick(scaleDown = 0.93f) {
-                            triggerCount++
+                            isSpinning = true
                             onRetry()
                         }
                         .padding(horizontal = 30.dp, vertical = 13.dp)
@@ -495,9 +497,15 @@ fun CosmosAppSplashScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    CosmosMorphingDotsSpinner(
+                        isSpinning = isChecking,
+                        isDarkTheme = isDarkTheme,
+                        dotColor = textPrimary
+                    )
+
                     // Title
                     Text(
                         text = if (isRu) "No internet connection" else "No internet connection",

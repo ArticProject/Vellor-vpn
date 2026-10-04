@@ -235,20 +235,6 @@ fun VellorApp(
                 }
             }
 
-            // Giant Cosmos.so style typography "ASTRAL" behind floating Safari Bar
-            Text(
-                text = "ASTRAL",
-                fontSize = 88.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 12.sp,
-                color = if (isDarkTheme) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .graphicsLayer { translationY = 22.dp.toPx() }
-            )
-
             VellorSafariBar(
                 currentTab = currentTab,
                 onTabSelected = { tab ->

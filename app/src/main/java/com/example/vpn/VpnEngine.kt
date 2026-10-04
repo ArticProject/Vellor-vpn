@@ -37,7 +37,8 @@ class XrayEngine(context: Context) : VpnEngine {
     init {
         Seq.setContext(context.applicationContext)
         try {
-            Libv2ray.initCoreEnv(context.filesDir.absolutePath, context.cacheDir.absolutePath)
+            // Second argument to initCoreEnv is xudpBaseKey (must be 32 bytes or empty string)
+            Libv2ray.initCoreEnv(context.filesDir.absolutePath, "")
         } catch (_: Exception) {}
     }
 

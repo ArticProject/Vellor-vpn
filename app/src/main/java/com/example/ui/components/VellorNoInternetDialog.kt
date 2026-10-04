@@ -4,7 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,14 +40,21 @@ fun VellorNoInternetDialog(
                     .padding(horizontal = 24.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                var isRetrying by remember { mutableStateOf(false) }
+
+                LaunchedEffect(isRetrying) {
+                    if (isRetrying) {
+                        kotlinx.coroutines.delay(2000)
+                        isRetrying = false
+                    }
+                }
+
                 // 8-dots morphing animation 1-in-1
-                VellorMorphingDotsAnimation(
-                    modifier = Modifier
-                        .padding(top = 8.dp, bottom = 16.dp)
-                        .testTag("morphing_dots_animation"),
+                CosmosMorphingDotsSpinner(
+                    isSpinning = isRetrying,
+                    isDarkTheme = false,
                     dotColor = Color(0xFF000000),
-                    size = 130.dp,
-                    dotRadiusDp = 5.5.dp
+                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
                 )
 
                 Text(
@@ -75,7 +83,10 @@ fun VellorNoInternetDialog(
                 Spacer(modifier = Modifier.height(26.dp))
 
                 Button(
-                    onClick = onRetry,
+                    onClick = {
+                        isRetrying = true
+                        onRetry()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp)

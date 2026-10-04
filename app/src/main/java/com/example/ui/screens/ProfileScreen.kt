@@ -127,10 +127,8 @@ fun ProfileScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val isRu = currentLanguage == AppLanguage.RUSSIAN
 
-    var keyInputText by remember { mutableStateOf("") }
     var showRegisterDialog by remember { mutableStateOf(false) }
     var showAvatarDialog by remember { mutableStateOf(false) }
-    var showKeyInputDialog by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -412,123 +410,6 @@ fun ProfileScreen(
             }
         }
 
-        // 3. Compact Key / Subscription Window (NO GREEN, Warm Dark/White)
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(cardBg)
-                    .border(1.dp, cardBorder, RoundedCornerShape(20.dp))
-                    .padding(18.dp)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Header
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(innerBg),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.VpnKey,
-                                    contentDescription = null,
-                                    tint = textPrimary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                            Text(
-                                text = if (isRu) "КЛЮЧ ДОСТУПА" else "ACCESS KEY",
-                                color = textPrimary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.1.sp
-                            )
-                        }
-
-                        // Status Pill (Monochrome)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(innerBg)
-                                .border(0.8.dp, cardBorder, RoundedCornerShape(8.dp))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = if (isActivated) {
-                                    if (isRu) "АКТИВЕН" else "ACTIVE"
-                                } else {
-                                    if (isRu) "НЕ АКТИВЕН" else "INACTIVE"
-                                },
-                                color = if (isActivated) textPrimary else textSecondary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.8.sp
-                            )
-                        }
-                    }
-
-                    // Key info block
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(innerBg)
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = if (isRu) "Текущий профиль" else "Active Profile",
-                                    fontSize = 11.sp,
-                                    color = textSecondary
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (isActivated) {
-                                        if (activatedKey == "TEST") "H1Cloud Trial" else "VLESS Reality · $activeServerName"
-                                    } else {
-                                        if (isRu) "Требуется ввод ключа" else "Key required"
-                                    },
-                                    color = textPrimary,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            Text(
-                                text = if (isActivated) {
-                                    if (isRu) "Сменить" else "Change"
-                                } else {
-                                    if (isRu) "Ввести" else "Enter"
-                                },
-                                color = accentWarm,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .bounceClick(scaleDown = 0.94f) { showKeyInputDialog = true }
-                                    .padding(vertical = 4.dp, horizontal = 6.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
         // Bottom padding to clear floating navigation bar
         item {
             Spacer(modifier = Modifier.height(100.dp))
@@ -666,64 +547,6 @@ fun ProfileScreen(
             confirmButton = {
                 TextButton(onClick = { showAvatarDialog = false }) {
                     Text(if (isRu) "Закрыть" else "Close", color = textPrimary)
-                }
-            }
-        )
-    }
-
-    // Key Input Dialog
-    if (showKeyInputDialog) {
-        var tempKey by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { showKeyInputDialog = false },
-            title = {
-                Text(
-                    text = if (isRu) "Ввод ключа доступа" else "Access Key Input",
-                    fontWeight = FontWeight.Bold,
-                    color = textPrimary
-                )
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = if (isRu) "Вставьте VLESS-код или ссылку подписки:" else "Paste VLESS code or subscription URL:",
-                        fontSize = 13.sp,
-                        color = textSecondary
-                    )
-                    OutlinedTextField(
-                        value = tempKey,
-                        onValueChange = { tempKey = it },
-                        placeholder = { Text("vless://...", fontSize = 13.sp) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (isActivated) {
-                        TextButton(
-                            onClick = {
-                                onDeactivateKey()
-                                showKeyInputDialog = false
-                            }
-                        ) {
-                            Text(if (isRu) "Отключить текущий ключ" else "Sign out of key", color = Color(0xFFEF4444), fontSize = 12.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (tempKey.isNotBlank()) {
-                            onActivateKey(tempKey.trim())
-                            showKeyInputDialog = false
-                        }
-                    }
-                ) {
-                    Text(if (isRu) "Применить" else "Apply", fontWeight = FontWeight.Bold, color = textPrimary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showKeyInputDialog = false }) {
-                    Text(if (isRu) "Отмена" else "Cancel", color = textSecondary)
                 }
             }
         )
